@@ -58,7 +58,7 @@ const createModal = () => {
 
     const genderInput = new TextInputBuilder()
         .setCustomId('gender')
-        .setLabel('Jenis Kelamin (Pria/Wanita)')
+        .setLabel('Jenis Kelamin (Laki-laki/Perempuan)')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -107,26 +107,32 @@ client.on('interactionCreate', async (interaction) => {
 
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
-                .setTitle('Hasil Form Cari Jodoh')
+                .setTitle('Form Cari Jodoh')
                 .setDescription(
                     `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
                     `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
-                .setFooter({ text: 'Semoga beruntung!' });
+                .setFooter({ text: 'Semoga cepet dapet jodoh!' });
 
-            // Mengirim embed dengan teks tambahan dan tombol ulang
             const row = createFormButton();
-            await interaction.reply({
-                content: `${interaction.user} sedang <@&1052133998375227462>.`,
-                embeds: [embed],
-                components: [row],
-            });
 
-            // Tambahkan reaksi love
-            const message = await interaction.fetchReply();
-            await message.react('❤️');
+            // Mengirim pesan embed (bukan sebagai reply)
+            const channel = interaction.channel;
+            if (channel) {
+                await channel.send({
+                    content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                    embeds: [embed],
+                    components: [row],
+                });
+
+                // Tambahkan reaksi love
+                const message = await channel.messages.fetch({ limit: 1 }).then((messages) => messages.first());
+                if (message) await message.react('❤️');
+            }
+
+            await interaction.deferUpdate();
         }
     }
 });
@@ -135,7 +141,7 @@ client.on('interactionCreate', async (interaction) => {
 client.on('messageCreate', async (message) => {
     if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
-        await message.reply({
+        await message.channel.send({
             content: 'Klik tombol berikut untuk memulai form Cari Jodoh:',
             components: [row],
         });
