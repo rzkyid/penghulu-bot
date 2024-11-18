@@ -2,12 +2,17 @@
 require('dotenv').config();
 
 const { Client, GatewayIntentBits, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const express = require('express');
 
 // Menggunakan variabel lingkungan dari file .env
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 
-const client = new Client({ 
+// Membuat instance aplikasi Express
+const app = express();
+const port = process.env.PORT || 3000; // Menggunakan port yang ditentukan di .env atau default ke 3000
+
+const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, // Untuk mengakses guild
         GatewayIntentBits.GuildMessages, // Untuk menerima pesan di guild
@@ -99,6 +104,16 @@ client.on('messageCreate', async (message) => {
         const row = createFormButton();
         await message.reply({ content: 'Klik tombol berikut untuk mengisi form Cari Jodoh:', components: [row] });
     }
+});
+
+// Menambahkan route sederhana untuk menjaga server tetap hidup
+app.get('/', (req, res) => {
+    res.send('Bot is running!');
+});
+
+// Menjalankan server HTTP pada port yang ditentukan
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
 
 // Login bot
