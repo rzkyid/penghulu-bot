@@ -179,7 +179,7 @@ app.listen(PORT, () => {
 });
 
 // Menambahkan custom status
-const statusMessages = ["👀 Sedang Memantau", "👥 Warga Gang Desa"];
+const statusMessages = ['💌 Cari Jodoh?', '📞 Hubungi Saya!'];
 const statusTypes = [ 'dnd', 'idle'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
