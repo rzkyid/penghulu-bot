@@ -1,53 +1,50 @@
-// Mengimpor dotenv dan mengonfigurasi untuk membaca file .env
 require('dotenv').config();
 
-const { Client, GatewayIntentBits, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 const express = require('express');
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 
-// Menggunakan variabel lingkungan dari file .env
+// Konfigurasi bot
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
+const PORT = process.env.PORT || 3000;
 
-// Membuat instance aplikasi Express
+// Inisialisasi bot dan Express server
 const app = express();
-const port = process.env.PORT || 3000; // Menggunakan port yang ditentukan di .env atau default ke 3000
-
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds, // Untuk mengakses guild
-        GatewayIntentBits.GuildMessages, // Untuk menerima pesan di guild
-        GatewayIntentBits.DirectMessages, // Untuk menerima pesan langsung
-        GatewayIntentBits.MessageContent, // Untuk membaca konten pesan (perlu diaktifkan di dashboard aplikasi)
-    ]
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent,
+    ],
 });
 
 // Fungsi untuk membuat tombol
 const createFormButton = () => {
-    const button = new MessageButton()
-        .setCustomId('form_jodoh')  // ID tombol untuk interaksi
+    const button = new ButtonBuilder()
+        .setCustomId('form_jodoh') // ID tombol untuk interaksi
         .setLabel('Isi Form Cari Jodoh')
-        .setStyle('PRIMARY');
-    
-    const row = new MessageActionRow().addComponents(button);
+        .setStyle(ButtonStyle.Primary);
+
+    const row = new ActionRowBuilder().addComponents(button);
     return row;
 };
 
 // Fungsi untuk mengirim form kepada pengguna
 const sendForm = async (interaction) => {
-    // Kirimkan DM kepada user untuk mengisi form
     const user = interaction.user;
     const dmChannel = await user.createDM();
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor('#FF00FF')
         .setTitle('Form Cari Jodoh')
-        .setDescription('Silakan isi form berikut untuk melanjutkan.\nSetiap jawaban akan digunakan untuk mencari pasangan yang cocok.')
+        .setDescription(
+            'Silakan isi form berikut untuk melanjutkan.\nSetiap jawaban akan digunakan untuk mencari pasangan yang cocok.'
+        )
         .setTimestamp();
 
-    // Mengirim embed
     await dmChannel.send({ embeds: [embed] });
 
-    // Tanyakan informasi kepada pengguna
     const questions = [
         'Nama: ',
         'Umur: ',
@@ -56,30 +53,28 @@ const sendForm = async (interaction) => {
         'Domisili: ',
         'Kesibukan: ',
         'Hobi: ',
-        'Tipe Ideal: '
+        'Tipe Ideal: ',
     ];
 
     let userData = {};
     for (const question of questions) {
-        const filter = (response) => response.author.id === user.id; // Filter hanya untuk user ini
+        const filter = (response) => response.author.id === user.id;
         const msg = await dmChannel.send(question);
         const collected = await dmChannel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
         const answer = collected.first().content;
         userData[question] = answer;
     }
 
-    // Kirim hasil dalam bentuk embed
-    const resultEmbed = new MessageEmbed()
+    const resultEmbed = new EmbedBuilder()
         .setColor('#FF00FF')
         .setTitle('Hasil Form Cari Jodoh')
-        .setDescription(`Berikut adalah hasil form kamu: \n\n**Nama**: ${userData['Nama: ']}\n**Umur**: ${userData['Umur: ']}\n**Jenis Kelamin**: ${userData['Jenis Kelamin: ']}\n**Agama**: ${userData['Agama: ']}\n**Domisili**: ${userData['Domisili: ']}\n**Kesibukan**: ${userData['Kesibukan: ']}\n**Hobi**: ${userData['Hobi: ']}\n**Tipe Ideal**: ${userData['Tipe Ideal: ']}`)
+        .setDescription(
+            `Berikut adalah hasil form kamu:\n\n**Nama**: ${userData['Nama: ']}\n**Umur**: ${userData['Umur: ']}\n**Jenis Kelamin**: ${userData['Jenis Kelamin: ']}\n**Agama**: ${userData['Agama: ']}\n**Domisili**: ${userData['Domisili: ']}\n**Kesibukan**: ${userData['Kesibukan: ']}\n**Hobi**: ${userData['Hobi: ']}\n**Tipe Ideal**: ${userData['Tipe Ideal: ']}`
+        )
         .setThumbnail(user.displayAvatarURL())
         .setTimestamp();
 
-    // Kirim hasil ke channel atau ke DM
     await interaction.reply({ embeds: [resultEmbed] });
-
-    // Tag user dan beri reaksi love otomatis
     await interaction.react('❤️');
 };
 
@@ -93,7 +88,6 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
 
     if (interaction.customId === 'form_jodoh') {
-        // Menampilkan form kepada user
         await sendForm(interaction);
     }
 });
@@ -106,14 +100,13 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Menambahkan route sederhana untuk menjaga server tetap hidup
+// Menjaga aplikasi tetap hidup dengan server Express
 app.get('/', (req, res) => {
     res.send('Bot is running!');
 });
 
-// Menjalankan server HTTP pada port yang ditentukan
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
 });
 
 // Login bot
