@@ -15,6 +15,7 @@ const {
     InteractionType,
 } = require('discord.js');
 
+const path = require('path');
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
