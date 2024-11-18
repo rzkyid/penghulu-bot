@@ -1,10 +1,22 @@
 require('dotenv').config();
 
 const express = require('express');
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    InteractionType,
+} = require('discord.js');
+
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
-const PORT = process.env.PORT || 3000; // Port default 3000 jika tidak ada di .env
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 const client = new Client({
@@ -18,7 +30,7 @@ const client = new Client({
 // Fungsi untuk membuat tombol
 const createFormButton = () => {
     const button = new ButtonBuilder()
-        .setCustomId('form_jodoh_start')
+        .setCustomId('form_jodoh_start') // ID tombol untuk interaksi
         .setLabel('Isi Form Cari Jodoh')
         .setStyle(ButtonStyle.Primary);
 
@@ -26,8 +38,8 @@ const createFormButton = () => {
     return row;
 };
 
-// Fungsi untuk membuat modal
-const createFormModal = () => {
+// Fungsi untuk membuat modal form
+const createModal = () => {
     const modal = new ModalBuilder()
         .setCustomId('form_modal')
         .setTitle('Form Cari Jodoh');
@@ -53,13 +65,13 @@ const createFormModal = () => {
     const hobiInput = new TextInputBuilder()
         .setCustomId('hobi')
         .setLabel('Hobi Anda')
-        .setStyle(TextInputStyle.Short)
+        .setStyle(TextInputStyle.Paragraph)
         .setRequired(true);
 
     const tipeIdealInput = new TextInputBuilder()
         .setCustomId('tipe_ideal')
         .setLabel('Tipe Ideal Anda')
-        .setStyle(TextInputStyle.Short)
+        .setStyle(TextInputStyle.Paragraph)
         .setRequired(true);
 
     modal.addComponents(
@@ -73,8 +85,6 @@ const createFormModal = () => {
     return modal;
 };
 
-const userDataStore = {};
-
 // Ketika bot siap
 client.once('ready', () => {
     console.log('Bot is ready!');
@@ -84,8 +94,7 @@ client.once('ready', () => {
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         if (interaction.customId === 'form_jodoh_start') {
-            // Menampilkan modal pertama
-            const modal = createFormModal();
+            const modal = createModal();
             await interaction.showModal(modal);
         }
     } else if (interaction.type === InteractionType.ModalSubmit) {
@@ -96,38 +105,46 @@ client.on('interactionCreate', async (interaction) => {
             const hobi = interaction.fields.getTextInputValue('hobi');
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
-            // Simpan data pengguna
-            userDataStore[interaction.user.id] = { nama, umur, gender, hobi, tipeIdeal };
-
-            // Kirim hasil formulir dalam bentuk embed
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
                 .setTitle('Hasil Form Cari Jodoh')
                 .setDescription(
                     `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
-                    `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n` +
-                    `**Tipe Ideal**: ${tipeIdeal}`
+                    `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
                 .setFooter({ text: 'Semoga beruntung!' });
 
-            await interaction.reply({ embeds: [embed] });
+            // Mengirim embed dengan teks tambahan dan tombol ulang
+            const row = createFormButton();
+            await interaction.reply({
+                content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                embeds: [embed],
+                components: [row],
+            });
+
+            // Tambahkan reaksi love
+            const message = await interaction.fetchReply();
+            await message.react('❤️');
         }
     }
 });
 
-// Ketika bot menerima pesan untuk menampilkan tombol
+// Ketika pesan dikirim untuk memulai form
 client.on('messageCreate', async (message) => {
     if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
-        await message.reply({ content: 'Klik tombol berikut untuk memulai form Cari Jodoh:', components: [row] });
+        await message.reply({
+            content: 'Klik tombol berikut untuk memulai form Cari Jodoh:',
+            components: [row],
+        });
     }
 });
 
-// Menjalankan Express server untuk port
+// Server untuk menampilkan status bot
 app.get('/', (req, res) => {
-    res.send('Bot is running on port ' + PORT);
+    res.send('Bot is running!');
 });
 
 app.listen(PORT, () => {
