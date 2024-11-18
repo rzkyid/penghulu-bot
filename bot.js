@@ -110,14 +110,14 @@ client.on('interactionCreate', async (interaction) => {
 
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
-                .setTitle('Hasil Form Cari Jodoh')
+                .setTitle('Form Cari Jodoh')
                 .setDescription(
                     `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
                     `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
-                .setFooter({ text: 'Semoga beruntung!' });
+                .setFooter({ text: 'Yang tertarik DM ya!' });
 
             const row = createFormButton();
 
