@@ -124,13 +124,13 @@ client.on('interactionCreate', async (interaction) => {
                 .setFooter({ text: 'Yang tertarik, DM ya!' });
 
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
-            if (!channel) {
-                console.error('Error: Channel ID not found or accessible.');
-                await interaction.followUp({ content: 'Gagal mengirim form. Channel tidak ditemukan.', ephemeral: true });
-                return;
-            }
-
-            const sentMessage = await channel.send({ embeds: [embed] });
+            if (channel) {
+                const sentMessage = await channel.send({
+                    content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                    embeds: [embed],
+                    components: [row],
+                });
+                
             await sentMessage.react('❤️');
             await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
