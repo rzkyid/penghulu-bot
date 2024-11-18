@@ -1,0 +1,19 @@
+{
+  "name": "biro-jodoh-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord untuk Biro Jodoh dengan formulir interaktif.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "author": "Nevix",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
