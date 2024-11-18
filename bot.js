@@ -1,11 +1,9 @@
 require('dotenv').config();
 
 const express = require('express');
-const path = require('path');
 const {
     Client,
     GatewayIntentBits,
-    ActivityType,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
@@ -16,15 +14,10 @@ const {
     InteractionType,
 } = require('discord.js');
 
-const PREFIX = process.env.PREFIX || "!";
+const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
-const RESULT_CHANNEL_ID = '1284544825596837971';
-
-if (!TOKEN) {
-    console.error('Error: Discord bot token (TOKEN) is missing in the .env file.');
-    process.exit(1);
-}
+const RESULT_CHANNEL_ID = '1284544825596837971'; // ID channel tujuan
 
 const app = express();
 const client = new Client({
@@ -42,7 +35,8 @@ const createFormButton = () => {
         .setLabel('Isi Form Cari Jodoh')
         .setStyle(ButtonStyle.Primary);
 
-    return new ActionRowBuilder().addComponents(button);
+    const row = new ActionRowBuilder().addComponents(button);
+    return row;
 };
 
 // Fungsi membuat modal form
@@ -51,42 +45,42 @@ const createModal = () => {
         .setCustomId('form_modal')
         .setTitle('Form Cari Jodoh');
 
+    const namaInput = new TextInputBuilder()
+        .setCustomId('nama')
+        .setLabel('Nama Anda')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+    const umurInput = new TextInputBuilder()
+        .setCustomId('umur')
+        .setLabel('Umur Anda')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+    const genderInput = new TextInputBuilder()
+        .setCustomId('gender')
+        .setLabel('Jenis Kelamin (Pria/Wanita)')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+    const hobiInput = new TextInputBuilder()
+        .setCustomId('hobi')
+        .setLabel('Hobi Anda')
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+    const tipeIdealInput = new TextInputBuilder()
+        .setCustomId('tipe_ideal')
+        .setLabel('Tipe Ideal Anda')
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
     modal.addComponents(
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-                .setCustomId('nama')
-                .setLabel('Nama Anda')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-        ),
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-                .setCustomId('umur')
-                .setLabel('Umur Anda')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-        ),
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-                .setCustomId('gender')
-                .setLabel('Jenis Kelamin (Pria/Wanita)')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(true)
-        ),
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-                .setCustomId('hobi')
-                .setLabel('Hobi Anda')
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-        ),
-        new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-                .setCustomId('tipe_ideal')
-                .setLabel('Tipe Ideal Anda')
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-        )
+        new ActionRowBuilder().addComponents(namaInput),
+        new ActionRowBuilder().addComponents(umurInput),
+        new ActionRowBuilder().addComponents(genderInput),
+        new ActionRowBuilder().addComponents(hobiInput),
+        new ActionRowBuilder().addComponents(tipeIdealInput)
     );
 
     return modal;
@@ -94,28 +88,26 @@ const createModal = () => {
 
 // Ketika bot siap
 client.once('ready', () => {
-    console.log('[ BOT READY ] Bot is ready and running!');
+    console.log('Bot is ready!');
 });
 
-// Ketika tombol diklik atau modal disubmit
+// Ketika tombol diklik
 client.on('interactionCreate', async (interaction) => {
-    try {
-        // Ketika tombol ditekan
-        if (interaction.isButton() && interaction.customId === 'form_jodoh_start') {
+    if (interaction.isButton()) {
+        if (interaction.customId === 'form_jodoh_start') {
             const modal = createModal();
-            await interaction.showModal(modal); // Modal langsung dikirim tanpa deferReply
-            return; // Hentikan eksekusi di sini
+            await interaction.showModal(modal);
         }
+    } else if (interaction.type === InteractionType.ModalSubmit) {
+        if (interaction.customId === 'form_modal') {
+            await interaction.deferReply({ ephemeral: true }); // Tanggapi sementara
 
-        // Ketika modal di-submit
-        if (interaction.type === InteractionType.ModalSubmit && interaction.customId === 'form_modal') {
             const nama = interaction.fields.getTextInputValue('nama');
             const umur = interaction.fields.getTextInputValue('umur');
             const gender = interaction.fields.getTextInputValue('gender');
             const hobi = interaction.fields.getTextInputValue('hobi');
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
-            // Buat embed hasil form
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
                 .setTitle('Halo, perkenalkan saya!')
@@ -125,38 +117,29 @@ client.on('interactionCreate', async (interaction) => {
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
-                .setFooter({ text: 'Yang tertarik, DM ya!' });
+                .setFooter({ text: 'Yang tertarik DM ya!' });
 
-            // Kirim hasil form ke channel tujuan
+            const row = createFormButton();
+
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
-            if (!channel) {
-                console.error('Error: Channel tidak ditemukan.');
-                await interaction.reply({ content: 'Gagal mengirim form. Channel tidak ditemukan.', ephemeral: true });
-                return;
+            if (channel) {
+                const sentMessage = await channel.send({
+                    content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                    embeds: [embed],
+                    components: [row],
+                });
+
+                // Tambahkan reaksi love
+                await sentMessage.react('❤️');
+            } else {
+                console.error('Channel not found!');
             }
 
-            const sentMessage = await channel.send({
-                content: `${interaction.user} sedang <@&1052133998375227462>.`,
-                embeds: [embed],
-                components: [createFormButton()],
-            });
-
-            // Tambahkan reaksi love
-            await sentMessage.react('❤️');
-
-            // Tanggapi interaksi untuk menghindari timeout
-            await interaction.reply({ content: 'Form berhasil dikirim!', ephemeral: true });
-        }
-    } catch (error) {
-        console.error('Error handling interaction:', error);
-
-        // Tanggapi error jika interaksi belum ditangani
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ content: 'Terjadi kesalahan saat memproses interaksi Anda.', ephemeral: true });
+            // Jawab interaksi agar tidak kedaluwarsa
+            await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
     }
 });
-
 
 // Ketika pesan dikirim untuk memulai form
 client.on('messageCreate', async (message) => {
@@ -171,58 +154,12 @@ client.on('messageCreate', async (message) => {
 
 // Server untuk status bot
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.send('Bot is running!');
 });
 
 app.listen(PORT, () => {
-    console.log(`[ SERVER READY ] Running on http://localhost:${PORT}`);
-});
-
-// Menambahkan custom status
-const statusMessages = ['💌 Cari Jodoh?', '📞 Hubungi Saya!'];
-const statusTypes = [ 'dnd', 'idle'];
-let currentStatusIndex = 0;
-let currentTypeIndex = 0;
-
-async function login() {
-  try {
-    await client.login(process.env.TOKEN);
-    console.log('\x1b[36m[ LOGIN ]\x1b[0m', `\x1b[32mLogged in as: ${client.user.tag} ✅\x1b[0m`);
-    console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[35mBot ID: ${client.user.id} \x1b[0m`);
-    console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mConnected to ${client.guilds.cache.size} server(s) \x1b[0m`);
-  } catch (error) {
-    console.error('\x1b[31m[ ERROR ]\x1b[0m', 'Failed to log in:', error);
-    process.exit(1);
-  }
-}
-
-function updateStatus() {
-  const currentStatus = statusMessages[currentStatusIndex];
-  const currentType = statusTypes[currentTypeIndex];
-  client.user.setPresence({
-    activities: [{ name: currentStatus, type: ActivityType.Custom }],
-    status: currentType,
-  });
-  console.log('\x1b[33m[ STATUS ]\x1b[0m', `Updated status to: ${currentStatus} (${currentType})`);
-  currentStatusIndex = (currentStatusIndex + 1) % statusMessages.length;
-  currentTypeIndex = (currentTypeIndex + 1) % statusTypes.length;
-}
-
-function heartbeat() {
-  setInterval(() => {
-    console.log('\x1b[35m[ HEARTBEAT ]\x1b[0m', `Bot is alive at ${new Date().toLocaleTimeString()}`);
-  }, 30000);
-}
-
-client.once('ready', () => {
-  console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mPing: ${client.ws.ping} ms \x1b[0m`);
-  updateStatus();
-  setInterval(updateStatus, 10000);
-  heartbeat();
+    console.log(`Server is running on port ${PORT}`);
 });
 
 // Login bot
-client.login(TOKEN).catch((err) => {
-    console.error('Error logging in:', err);
-    process.exit(1);
-});
+client.login(TOKEN);
