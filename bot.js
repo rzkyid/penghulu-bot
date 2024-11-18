@@ -124,18 +124,28 @@ client.on('interactionCreate', async (interaction) => {
                 .setFooter({ text: 'Yang tertarik, DM ya!' });
 
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
-            if (channel) {
-                const sentMessage = await channel.send({
-                    content: `${interaction.user} sedang <@&1052133998375227462>.`,
-                    embeds: [embed],
-                    components: [row],
-                });
-                
+            if (!channel) {
+                console.error('Error: Channel tidak ditemukan.');
+                await interaction.followUp({ content: 'Gagal mengirim form. Channel tidak ditemukan.', ephemeral: true });
+                return;
+            }
+
+            const sentMessage = await channel.send({
+                content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                embeds: [embed],
+                components: [createFormButton()],
+            });
+
             await sentMessage.react('❤️');
             await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
-     catch (error) {
+    } catch (error) {
         console.error('Error handling interaction:', error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: 'Terjadi kesalahan saat memproses interaksi Anda.', ephemeral: true });
+        } else {
+            await interaction.reply({ content: 'Terjadi kesalahan saat memproses interaksi Anda.', ephemeral: true });
+        }
     }
 });
 
@@ -161,20 +171,16 @@ app.listen(PORT, () => {
 
 // Menambahkan custom status
 const statusMessages = ['💌 Cari Jodoh?', '📞 Hubungi Saya!'];
-const statusTypes = ['dnd', 'idle'];
 let currentStatusIndex = 0;
 
 function updateStatus() {
     const currentStatus = statusMessages[currentStatusIndex];
     client.user.setPresence({
-        activities: [{ name: currentStatus, type: ActivityType.Custom }],
-        status: statusTypes[currentStatusIndex % statusTypes.length],
+        activities: [{ name: currentStatus, type: ActivityType.Playing }],
     });
-    console.log('[ STATUS ] Updated status to:', currentStatus);
     currentStatusIndex = (currentStatusIndex + 1) % statusMessages.length;
 }
 
-// Memulai proses status update
 client.once('ready', () => {
     setInterval(updateStatus, 10000);
     updateStatus();
