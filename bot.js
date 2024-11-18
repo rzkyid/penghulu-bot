@@ -17,6 +17,7 @@ const {
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
+const RESULT_CHANNEL_ID = '1284544825596837971'; // ID channel tempat hasil form dikirim
 
 const app = express();
 const client = new Client({
@@ -58,7 +59,7 @@ const createModal = () => {
 
     const genderInput = new TextInputBuilder()
         .setCustomId('gender')
-        .setLabel('Jenis Kelamin (Laki-laki/Perempuan)')
+        .setLabel('Jenis Kelamin (Pria/Wanita)')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -107,19 +108,19 @@ client.on('interactionCreate', async (interaction) => {
 
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
-                .setTitle('Form Cari Jodoh')
+                .setTitle('Hasil Form Cari Jodoh')
                 .setDescription(
                     `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
                     `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
-                .setFooter({ text: 'Semoga cepet dapet jodoh!' });
+                .setFooter({ text: 'Semoga beruntung!' });
 
             const row = createFormButton();
 
-            // Mengirim pesan embed (bukan sebagai reply)
-            const channel = interaction.channel;
+            // Kirim ke channel tertentu
+            const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
             if (channel) {
                 await channel.send({
                     content: `${interaction.user} sedang <@&1052133998375227462>.`,
@@ -130,6 +131,8 @@ client.on('interactionCreate', async (interaction) => {
                 // Tambahkan reaksi love
                 const message = await channel.messages.fetch({ limit: 1 }).then((messages) => messages.first());
                 if (message) await message.react('❤️');
+            } else {
+                console.error('Channel not found!');
             }
 
             await interaction.deferUpdate();
