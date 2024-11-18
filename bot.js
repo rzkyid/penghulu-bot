@@ -1,13 +1,20 @@
 // Mengimpor dotenv dan mengonfigurasi untuk membaca file .env
 require('dotenv').config();
 
-const { Client, Intents, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const { Client, GatewayIntentBits, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
 // Menggunakan variabel lingkungan dari file .env
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES] });
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds, // Untuk mengakses guild
+        GatewayIntentBits.GuildMessages, // Untuk menerima pesan di guild
+        GatewayIntentBits.DirectMessages, // Untuk menerima pesan langsung
+        GatewayIntentBits.MessageContent, // Untuk membaca konten pesan (perlu diaktifkan di dashboard aplikasi)
+    ]
+});
 
 // Fungsi untuk membuat tombol
 const createFormButton = () => {
