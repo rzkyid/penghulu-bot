@@ -1,5 +1,11 @@
+// Mengimpor dotenv dan mengonfigurasi untuk membaca file .env
+require('dotenv').config();
+
 const { Client, Intents, MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-const { PREFIX, TOKEN } = require('./config'); // Sesuaikan dengan token bot Anda
+
+// Menggunakan variabel lingkungan dari file .env
+const PREFIX = process.env.PREFIX;
+const TOKEN = process.env.TOKEN;
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES] });
 
@@ -7,7 +13,7 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const createFormButton = () => {
     const button = new MessageButton()
         .setCustomId('form_jodoh')  // ID tombol untuk interaksi
-        .setLabel('Isi Form Cari Jodoh')  // Ganti label tombol
+        .setLabel('Isi Form Cari Jodoh')
         .setStyle('PRIMARY');
     
     const row = new MessageActionRow().addComponents(button);
@@ -22,7 +28,7 @@ const sendForm = async (interaction) => {
 
     const embed = new MessageEmbed()
         .setColor('#FF00FF')
-        .setTitle('Form Cari Jodoh')  // Ganti judul
+        .setTitle('Form Cari Jodoh')
         .setDescription('Silakan isi form berikut untuk melanjutkan.\nSetiap jawaban akan digunakan untuk mencari pasangan yang cocok.')
         .setTimestamp();
 
@@ -53,7 +59,7 @@ const sendForm = async (interaction) => {
     // Kirim hasil dalam bentuk embed
     const resultEmbed = new MessageEmbed()
         .setColor('#FF00FF')
-        .setTitle('Hasil Form Cari Jodoh')  // Ganti judul
+        .setTitle('Hasil Form Cari Jodoh')
         .setDescription(`Berikut adalah hasil form kamu: \n\n**Nama**: ${userData['Nama: ']}\n**Umur**: ${userData['Umur: ']}\n**Jenis Kelamin**: ${userData['Jenis Kelamin: ']}\n**Agama**: ${userData['Agama: ']}\n**Domisili**: ${userData['Domisili: ']}\n**Kesibukan**: ${userData['Kesibukan: ']}\n**Hobi**: ${userData['Hobi: ']}\n**Tipe Ideal**: ${userData['Tipe Ideal: ']}`)
         .setThumbnail(user.displayAvatarURL())
         .setTimestamp();
@@ -82,17 +88,9 @@ client.on('interactionCreate', async (interaction) => {
 
 // Ketika bot menerima pesan untuk menampilkan tombol
 client.on('messageCreate', async (message) => {
-    if (message.content === `${PREFIX}carijodoh`) {  // Ganti perintah di sini
+    if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
         await message.reply({ content: 'Klik tombol berikut untuk mengisi form Cari Jodoh:', components: [row] });
-    }
-});
-
-// Ketika pengguna mengetik perintah lainnya, pastikan tombol tetap muncul di pesan awal
-client.on('messageCreate', async (message) => {
-    if (message.content === `${PREFIX}carijodoh` && !message.author.bot) {  // Ganti perintah di sini
-        const row = createFormButton();
-        await message.channel.send({ content: 'Klik tombol berikut untuk mengisi form Cari Jodoh:', components: [row] });
     }
 });
 
