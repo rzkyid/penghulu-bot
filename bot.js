@@ -3,12 +3,10 @@ require('dotenv').config();
 const express = require('express');
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 
-// Konfigurasi bot
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
 
-// Inisialisasi bot dan Express server
 const app = express();
 const client = new Client({
     intents: [
@@ -32,6 +30,9 @@ const createFormButton = () => {
 
 // Fungsi untuk mengirim form kepada pengguna
 const sendForm = async (interaction) => {
+    // Menanggapi interaksi dengan defer terlebih dahulu
+    await interaction.deferReply({ ephemeral: true });
+
     const user = interaction.user;
     const dmChannel = await user.createDM();
 
@@ -43,6 +44,7 @@ const sendForm = async (interaction) => {
         )
         .setTimestamp();
 
+    // Kirimkan DM ke user
     await dmChannel.send({ embeds: [embed] });
 
     const questions = [
@@ -74,8 +76,8 @@ const sendForm = async (interaction) => {
         .setThumbnail(user.displayAvatarURL())
         .setTimestamp();
 
-    await interaction.reply({ embeds: [resultEmbed] });
-    await interaction.react('❤️');
+    // Kirim hasil ke channel atau DM
+    await interaction.followUp({ embeds: [resultEmbed] });
 };
 
 // Ketika bot siap
@@ -88,7 +90,12 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
 
     if (interaction.customId === 'form_jodoh') {
-        await sendForm(interaction);
+        try {
+            await sendForm(interaction);
+        } catch (error) {
+            console.error('Error handling interaction:', error);
+            await interaction.followUp({ content: 'Maaf, terjadi kesalahan saat memproses permintaan Anda.', ephemeral: true });
+        }
     }
 });
 
