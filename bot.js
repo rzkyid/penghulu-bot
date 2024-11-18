@@ -1,9 +1,12 @@
 require('dotenv').config();
 
+const express = require('express');
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, InteractionType } = require('discord.js');
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
+const PORT = process.env.PORT || 3000; // Port default 3000 jika tidak ada di .env
 
+const app = express();
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -168,6 +171,15 @@ client.on('messageCreate', async (message) => {
         const row = createFormButton();
         await message.reply({ content: 'Klik tombol berikut untuk memulai form Cari Jodoh:', components: [row] });
     }
+});
+
+// Menjalankan Express server untuk port
+app.get('/', (req, res) => {
+    res.send('Bot is running on port ' + PORT);
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
 // Login bot
