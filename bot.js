@@ -1,7 +1,18 @@
 require('dotenv').config();
 
 const express = require('express');
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    EmbedBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    InteractionType,
+} = require('discord.js');
 
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
@@ -12,7 +23,6 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.DirectMessages,
         GatewayIntentBits.MessageContent,
     ],
 });
@@ -28,56 +38,68 @@ const createFormButton = () => {
     return row;
 };
 
-// Fungsi untuk mengirim form kepada pengguna
-const sendForm = async (interaction) => {
-    // Menanggapi interaksi dengan defer terlebih dahulu
-    await interaction.deferReply({ ephemeral: true });
+// Fungsi untuk membuat modal (popup form)
+const createFormModal = () => {
+    const modal = new ModalBuilder()
+        .setCustomId('form_modal')
+        .setTitle('Form Cari Jodoh');
 
-    const user = interaction.user;
-    const dmChannel = await user.createDM();
+    // Input fields
+    const namaInput = new TextInputBuilder()
+        .setCustomId('nama')
+        .setLabel('Nama Anda')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    const embed = new EmbedBuilder()
-        .setColor('#FF00FF')
-        .setTitle('Form Cari Jodoh')
-        .setDescription(
-            'Silakan isi form berikut untuk melanjutkan.\nSetiap jawaban akan digunakan untuk mencari pasangan yang cocok.'
-        )
-        .setTimestamp();
+    const umurInput = new TextInputBuilder()
+        .setCustomId('umur')
+        .setLabel('Umur Anda')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    // Kirimkan DM ke user
-    await dmChannel.send({ embeds: [embed] });
+    const genderInput = new TextInputBuilder()
+        .setCustomId('gender')
+        .setLabel('Jenis Kelamin')
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder('Pria/Wanita')
+        .setRequired(true);
 
-    const questions = [
-        'Nama: ',
-        'Umur: ',
-        'Jenis Kelamin: ',
-        'Agama: ',
-        'Domisili: ',
-        'Kesibukan: ',
-        'Hobi: ',
-        'Tipe Ideal: ',
-    ];
+    const agamaInput = new TextInputBuilder()
+        .setCustomId('agama')
+        .setLabel('Agama')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    let userData = {};
-    for (const question of questions) {
-        const filter = (response) => response.author.id === user.id;
-        const msg = await dmChannel.send(question);
-        const collected = await dmChannel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
-        const answer = collected.first().content;
-        userData[question] = answer;
-    }
+    const domisiliInput = new TextInputBuilder()
+        .setCustomId('domisili')
+        .setLabel('Domisili')
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-    const resultEmbed = new EmbedBuilder()
-        .setColor('#FF00FF')
-        .setTitle('Hasil Form Cari Jodoh')
-        .setDescription(
-            `Berikut adalah hasil form kamu:\n\n**Nama**: ${userData['Nama: ']}\n**Umur**: ${userData['Umur: ']}\n**Jenis Kelamin**: ${userData['Jenis Kelamin: ']}\n**Agama**: ${userData['Agama: ']}\n**Domisili**: ${userData['Domisili: ']}\n**Kesibukan**: ${userData['Kesibukan: ']}\n**Hobi**: ${userData['Hobi: ']}\n**Tipe Ideal**: ${userData['Tipe Ideal: ']}`
-        )
-        .setThumbnail(user.displayAvatarURL())
-        .setTimestamp();
+    const hobbiesInput = new TextInputBuilder()
+        .setCustomId('hobi')
+        .setLabel('Hobi Anda')
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
 
-    // Kirim hasil ke channel atau DM
-    await interaction.followUp({ embeds: [resultEmbed] });
+    const tipeIdealInput = new TextInputBuilder()
+        .setCustomId('tipe_ideal')
+        .setLabel('Tipe Ideal')
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+    // Tambahkan input fields ke modal
+    modal.addComponents(
+        new ActionRowBuilder().addComponents(namaInput),
+        new ActionRowBuilder().addComponents(umurInput),
+        new ActionRowBuilder().addComponents(genderInput),
+        new ActionRowBuilder().addComponents(agamaInput),
+        new ActionRowBuilder().addComponents(domisiliInput),
+        new ActionRowBuilder().addComponents(hobbiesInput),
+        new ActionRowBuilder().addComponents(tipeIdealInput)
+    );
+
+    return modal;
 };
 
 // Ketika bot siap
@@ -85,21 +107,48 @@ client.once('ready', () => {
     console.log('Bot is ready!');
 });
 
-// Ketika ada interaksi (tombol diklik)
+// Ketika tombol diklik
 client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isButton()) return;
+    if (interaction.isButton()) {
+        if (interaction.customId === 'form_jodoh') {
+            const modal = createFormModal();
+            await interaction.showModal(modal);
+        }
+    } else if (interaction.type === InteractionType.ModalSubmit) {
+        if (interaction.customId === 'form_modal') {
+            // Ambil data dari modal
+            const nama = interaction.fields.getTextInputValue('nama');
+            const umur = interaction.fields.getTextInputValue('umur');
+            const gender = interaction.fields.getTextInputValue('gender');
+            const agama = interaction.fields.getTextInputValue('agama');
+            const domisili = interaction.fields.getTextInputValue('domisili');
+            const hobi = interaction.fields.getTextInputValue('hobi');
+            const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
-    if (interaction.customId === 'form_jodoh') {
-        try {
-            await sendForm(interaction);
-        } catch (error) {
-            console.error('Error handling interaction:', error);
-            await interaction.followUp({ content: 'Maaf, terjadi kesalahan saat memproses permintaan Anda.', ephemeral: true });
+            // Buat embed hasil
+            const embed = new EmbedBuilder()
+                .setColor('#FF00FF')
+                .setTitle('Hasil Form Cari Jodoh')
+                .setDescription(
+                    `**Nama**: ${nama}\n**Umur**: ${umur}\n**Jenis Kelamin**: ${gender}\n**Agama**: ${agama}\n**Domisili**: ${domisili}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
+                )
+                .setThumbnail(interaction.user.displayAvatarURL())
+                .setTimestamp()
+                .setAuthor({
+                    name: `${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL(),
+                })
+                .setFooter({
+                    text: 'Semoga beruntung menemukan pasangan ideal!',
+                });
+
+            // Kirim hasil embed ke channel
+            await interaction.reply({ embeds: [embed] });
         }
     }
 });
 
-// Ketika bot menerima pesan untuk menampilkan tombol
+// Ketika bot menerima perintah untuk menampilkan tombol
 client.on('messageCreate', async (message) => {
     if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
