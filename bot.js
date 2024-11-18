@@ -134,7 +134,7 @@ client.on('interactionCreate', async (interaction) => {
             await sentMessage.react('❤️');
             await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
-    } catch (error) {
+     catch (error) {
         console.error('Error handling interaction:', error);
     }
 });
