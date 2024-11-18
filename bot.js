@@ -100,33 +100,38 @@ client.once('ready', () => {
 // Ketika tombol diklik atau modal disubmit
 client.on('interactionCreate', async (interaction) => {
     try {
+        // Ketika tombol ditekan
         if (interaction.isButton() && interaction.customId === 'form_jodoh_start') {
             const modal = createModal();
-            await interaction.showModal(modal);
-        } else if (interaction.type === InteractionType.ModalSubmit && interaction.customId === 'form_modal') {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.showModal(modal); // Modal langsung dikirim tanpa deferReply
+            return; // Hentikan eksekusi di sini
+        }
 
+        // Ketika modal di-submit
+        if (interaction.type === InteractionType.ModalSubmit && interaction.customId === 'form_modal') {
             const nama = interaction.fields.getTextInputValue('nama');
             const umur = interaction.fields.getTextInputValue('umur');
             const gender = interaction.fields.getTextInputValue('gender');
             const hobi = interaction.fields.getTextInputValue('hobi');
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
+            // Buat embed hasil form
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
                 .setTitle('Halo, perkenalkan saya!')
                 .setDescription(
-                    `**Nama**: ${nama}\n**Umur**: ${umur}\n**Jenis Kelamin**: ${gender}\n` +
-                    `**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
+                    `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
+                    `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
                 .setFooter({ text: 'Yang tertarik, DM ya!' });
 
+            // Kirim hasil form ke channel tujuan
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
             if (!channel) {
                 console.error('Error: Channel tidak ditemukan.');
-                await interaction.followUp({ content: 'Gagal mengirim form. Channel tidak ditemukan.', ephemeral: true });
+                await interaction.reply({ content: 'Gagal mengirim form. Channel tidak ditemukan.', ephemeral: true });
                 return;
             }
 
@@ -136,18 +141,22 @@ client.on('interactionCreate', async (interaction) => {
                 components: [createFormButton()],
             });
 
+            // Tambahkan reaksi love
             await sentMessage.react('❤️');
-            await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
+
+            // Tanggapi interaksi untuk menghindari timeout
+            await interaction.reply({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
     } catch (error) {
         console.error('Error handling interaction:', error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'Terjadi kesalahan saat memproses interaksi Anda.', ephemeral: true });
-        } else {
+
+        // Tanggapi error jika interaksi belum ditangani
+        if (!interaction.replied && !interaction.deferred) {
             await interaction.reply({ content: 'Terjadi kesalahan saat memproses interaksi Anda.', ephemeral: true });
         }
     }
 });
+
 
 // Ketika pesan dikirim untuk memulai form
 client.on('messageCreate', async (message) => {
