@@ -26,11 +26,11 @@ const createFormButton = () => {
     return row;
 };
 
-// Fungsi untuk membuat modal pertama (bagian 1)
-const createFirstModal = () => {
+// Fungsi untuk membuat modal
+const createFormModal = () => {
     const modal = new ModalBuilder()
-        .setCustomId('form_modal_step1')
-        .setTitle('Form Cari Jodoh - Bagian 1');
+        .setCustomId('form_modal')
+        .setTitle('Form Cari Jodoh');
 
     const namaInput = new TextInputBuilder()
         .setCustomId('nama')
@@ -50,15 +50,15 @@ const createFirstModal = () => {
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-    const agamaInput = new TextInputBuilder()
-        .setCustomId('agama')
-        .setLabel('Agama Anda')
+    const hobiInput = new TextInputBuilder()
+        .setCustomId('hobi')
+        .setLabel('Hobi Anda')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-    const domisiliInput = new TextInputBuilder()
-        .setCustomId('domisili')
-        .setLabel('Domisili Anda')
+    const tipeIdealInput = new TextInputBuilder()
+        .setCustomId('tipe_ideal')
+        .setLabel('Tipe Ideal Anda')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -66,39 +66,6 @@ const createFirstModal = () => {
         new ActionRowBuilder().addComponents(namaInput),
         new ActionRowBuilder().addComponents(umurInput),
         new ActionRowBuilder().addComponents(genderInput),
-        new ActionRowBuilder().addComponents(agamaInput),
-        new ActionRowBuilder().addComponents(domisiliInput)
-    );
-
-    return modal;
-};
-
-// Fungsi untuk membuat modal kedua (bagian 2)
-const createSecondModal = () => {
-    const modal = new ModalBuilder()
-        .setCustomId('form_modal_step2')
-        .setTitle('Form Cari Jodoh - Bagian 2');
-
-    const kesibukanInput = new TextInputBuilder()
-        .setCustomId('kesibukan')
-        .setLabel('Kesibukan Anda')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true);
-
-    const hobiInput = new TextInputBuilder()
-        .setCustomId('hobi')
-        .setLabel('Hobi Anda')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true);
-
-    const tipeIdealInput = new TextInputBuilder()
-        .setCustomId('tipe_ideal')
-        .setLabel('Tipe Ideal Anda')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true);
-
-    modal.addComponents(
-        new ActionRowBuilder().addComponents(kesibukanInput),
         new ActionRowBuilder().addComponents(hobiInput),
         new ActionRowBuilder().addComponents(tipeIdealInput)
     );
@@ -118,43 +85,28 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         if (interaction.customId === 'form_jodoh_start') {
             // Menampilkan modal pertama
-            const modal = createFirstModal();
+            const modal = createFormModal();
             await interaction.showModal(modal);
         }
     } else if (interaction.type === InteractionType.ModalSubmit) {
-        if (interaction.customId === 'form_modal_step1') {
+        if (interaction.customId === 'form_modal') {
             const nama = interaction.fields.getTextInputValue('nama');
             const umur = interaction.fields.getTextInputValue('umur');
             const gender = interaction.fields.getTextInputValue('gender');
-            const agama = interaction.fields.getTextInputValue('agama');
-            const domisili = interaction.fields.getTextInputValue('domisili');
-
-            userDataStore[interaction.user.id] = { nama, umur, gender, agama, domisili };
-
-            // Menampilkan modal kedua
-            const modal = createSecondModal();
-            await interaction.showModal(modal);
-        } else if (interaction.customId === 'form_modal_step2') {
-            const kesibukan = interaction.fields.getTextInputValue('kesibukan');
             const hobi = interaction.fields.getTextInputValue('hobi');
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
-            const userData = userDataStore[interaction.user.id] || {};
-            userData.kesibukan = kesibukan;
-            userData.hobi = hobi;
-            userData.tipeIdeal = tipeIdeal;
-
-            delete userDataStore[interaction.user.id];
+            // Simpan data pengguna
+            userDataStore[interaction.user.id] = { nama, umur, gender, hobi, tipeIdeal };
 
             // Kirim hasil formulir dalam bentuk embed
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
                 .setTitle('Hasil Form Cari Jodoh')
                 .setDescription(
-                    `**Nama**: ${userData.nama}\n**Umur**: ${userData.umur}\n` +
-                    `**Jenis Kelamin**: ${userData.gender}\n**Agama**: ${userData.agama}\n` +
-                    `**Domisili**: ${userData.domisili}\n**Kesibukan**: ${userData.kesibukan}\n` +
-                    `**Hobi**: ${userData.hobi}\n**Tipe Ideal**: ${userData.tipeIdeal}`
+                    `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
+                    `**Jenis Kelamin**: ${gender}\n**Hobi**: ${hobi}\n` +
+                    `**Tipe Ideal**: ${tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
