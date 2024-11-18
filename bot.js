@@ -44,7 +44,6 @@ const createFirstModal = () => {
         .setCustomId('form_modal_step1')
         .setTitle('Form Cari Jodoh - Bagian 1');
 
-    // Input fields modal pertama
     const namaInput = new TextInputBuilder()
         .setCustomId('nama')
         .setLabel('Nama Anda')
@@ -92,7 +91,6 @@ const createSecondModal = () => {
         .setCustomId('form_modal_step2')
         .setTitle('Form Cari Jodoh - Bagian 2');
 
-    // Input fields modal kedua
     const kesibukanInput = new TextInputBuilder()
         .setCustomId('kesibukan')
         .setLabel('Kesibukan Anda')
@@ -120,7 +118,6 @@ const createSecondModal = () => {
     return modal;
 };
 
-// Objek untuk menyimpan data sementara pengguna
 const userDataStore = {};
 
 // Ketika bot siap
@@ -137,88 +134,58 @@ client.on('interactionCreate', async (interaction) => {
         }
     } else if (interaction.type === InteractionType.ModalSubmit) {
         if (interaction.customId === 'form_modal_step1') {
-            // Ambil data dari modal pertama
             const nama = interaction.fields.getTextInputValue('nama');
             const umur = interaction.fields.getTextInputValue('umur');
             const gender = interaction.fields.getTextInputValue('gender');
             const agama = interaction.fields.getTextInputValue('agama');
             const domisili = interaction.fields.getTextInputValue('domisili');
 
-            // Simpan data ke userDataStore
-            userDataStore[interaction.user.id] = {
-                nama,
-                umur,
-                gender,
-                agama,
-                domisili,
-            };
-
-            // Tampilkan modal kedua
+            userDataStore[interaction.user.id] = { nama, umur, gender, agama, domisili };
             const modal = createSecondModal();
             await interaction.showModal(modal);
         } else if (interaction.customId === 'form_modal_step2') {
-            // Ambil data dari modal kedua
             const kesibukan = interaction.fields.getTextInputValue('kesibukan');
             const hobi = interaction.fields.getTextInputValue('hobi');
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
-            // Ambil data sebelumnya dari userDataStore
             const userData = userDataStore[interaction.user.id] || {};
-
-            // Tambahkan data baru
             userData.kesibukan = kesibukan;
             userData.hobi = hobi;
             userData.tipeIdeal = tipeIdeal;
 
-            // Hapus data sementara dari store (opsional)
             delete userDataStore[interaction.user.id];
 
-            // Buat embed hasil
             const embed = new EmbedBuilder()
                 .setColor('#FF00FF')
                 .setTitle('Hasil Form Cari Jodoh')
                 .setDescription(
-                    `**Nama**: ${userData.nama}\n` +
-                    `**Umur**: ${userData.umur}\n` +
-                    `**Jenis Kelamin**: ${userData.gender}\n` +
-                    `**Agama**: ${userData.agama}\n` +
-                    `**Domisili**: ${userData.domisili}\n` +
-                    `**Kesibukan**: ${userData.kesibukan}\n` +
-                    `**Hobi**: ${userData.hobi}\n` +
-                    `**Tipe Ideal**: ${userData.tipeIdeal}`
+                    `**Nama**: ${userData.nama}\n**Umur**: ${userData.umur}\n` +
+                    `**Jenis Kelamin**: ${userData.gender}\n**Agama**: ${userData.agama}\n` +
+                    `**Domisili**: ${userData.domisili}\n**Kesibukan**: ${userData.kesibukan}\n` +
+                    `**Hobi**: ${userData.hobi}\n**Tipe Ideal**: ${userData.tipeIdeal}`
                 )
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .setTimestamp()
-                .setAuthor({
-                    name: interaction.user.username,
-                    iconURL: interaction.user.displayAvatarURL(),
-                })
-                .setFooter({
-                    text: 'Semoga beruntung menemukan pasangan ideal!',
-                });
+                .setFooter({ text: 'Semoga beruntung!' });
 
-            // Kirim hasil embed ke channel
             await interaction.reply({ embeds: [embed] });
         }
     }
 });
 
-// Ketika bot menerima perintah untuk menampilkan tombol
 client.on('messageCreate', async (message) => {
     if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
-        await message.reply({ content: 'Klik tombol berikut untuk mengisi form Cari Jodoh:', components: [row] });
+        await message.reply({ content: 'Klik tombol berikut untuk memulai form Cari Jodoh:', components: [row] });
     }
 });
 
-// Menjaga aplikasi tetap hidup dengan server Express
 app.get('/', (req, res) => {
     res.send('Bot is running!');
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
-// Login bot
 client.login(TOKEN);
