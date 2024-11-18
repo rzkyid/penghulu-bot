@@ -17,7 +17,7 @@ const {
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
-const RESULT_CHANNEL_ID = '1284544825596837971'; // ID channel tempat hasil form dikirim
+const RESULT_CHANNEL_ID = '1284544825596837971'; // ID channel tujuan
 
 const app = express();
 const client = new Client({
@@ -28,10 +28,10 @@ const client = new Client({
     ],
 });
 
-// Fungsi untuk membuat tombol
+// Fungsi membuat tombol
 const createFormButton = () => {
     const button = new ButtonBuilder()
-        .setCustomId('form_jodoh_start') // ID tombol untuk interaksi
+        .setCustomId('form_jodoh_start')
         .setLabel('Isi Form Cari Jodoh')
         .setStyle(ButtonStyle.Primary);
 
@@ -39,7 +39,7 @@ const createFormButton = () => {
     return row;
 };
 
-// Fungsi untuk membuat modal form
+// Fungsi membuat modal form
 const createModal = () => {
     const modal = new ModalBuilder()
         .setCustomId('form_modal')
@@ -100,6 +100,8 @@ client.on('interactionCreate', async (interaction) => {
         }
     } else if (interaction.type === InteractionType.ModalSubmit) {
         if (interaction.customId === 'form_modal') {
+            await interaction.deferReply({ ephemeral: true }); // Tanggapi sementara
+
             const nama = interaction.fields.getTextInputValue('nama');
             const umur = interaction.fields.getTextInputValue('umur');
             const gender = interaction.fields.getTextInputValue('gender');
@@ -119,23 +121,22 @@ client.on('interactionCreate', async (interaction) => {
 
             const row = createFormButton();
 
-            // Kirim ke channel tertentu
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
             if (channel) {
-                await channel.send({
+                const sentMessage = await channel.send({
                     content: `${interaction.user} sedang <@&1052133998375227462>.`,
                     embeds: [embed],
                     components: [row],
                 });
 
                 // Tambahkan reaksi love
-                const message = await channel.messages.fetch({ limit: 1 }).then((messages) => messages.first());
-                if (message) await message.react('❤️');
+                await sentMessage.react('❤️');
             } else {
                 console.error('Channel not found!');
             }
 
-            await interaction.deferUpdate();
+            // Jawab interaksi agar tidak kedaluwarsa
+            await interaction.followUp({ content: 'Form berhasil dikirim!', ephemeral: true });
         }
     }
 });
@@ -151,7 +152,7 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Server untuk menampilkan status bot
+// Server untuk status bot
 app.get('/', (req, res) => {
     res.send('Bot is running!');
 });
