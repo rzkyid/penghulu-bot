@@ -93,32 +93,6 @@ async function playAudio(channel) {
     }
 }
 
- // Perintah untuk bergabung ke voice channel dan memutar audio
-    if (message.content.startsWith(`${PREFIX}join`)) {
-        const voiceChannel = message.member.voice.channel;
-
-        if (!voiceChannel) {
-            message.reply('Anda harus berada di voice channel untuk menggunakan perintah ini.');
-            return;
-        }
-
-        await playAudio(voiceChannel);
-        message.reply('Pak Penghulu telah bergabung ke channel.');
-    }
-
-    // Perintah untuk keluar dari voice channel
-    if (message.content.startsWith(`${PREFIX}leave`)) {
-        if (connection) {
-            connection.destroy();
-            connection = null;
-            player = null;
-            message.reply('Pak Penghulu telah keluar dari voice channel.');
-        } else {
-            message.reply('Pak Penghulu tidak berada di voice channel.');
-        }
-    }
-});
-
 // Fungsi membuat tombol
 const createFormButton = () => {
     const button = new ButtonBuilder()
@@ -234,6 +208,29 @@ client.on('interactionCreate', async (interaction) => {
 
 // Ketika pesan dikirim untuk memulai form
 client.on('messageCreate', async (message) => {
+    if (message.content.startsWith(`${PREFIX}join`)) {
+        const voiceChannel = message.member.voice.channel;
+
+        if (!voiceChannel) {
+            message.reply('Anda harus berada di voice channel untuk menggunakan perintah ini.');
+            return;
+        }
+
+        await playAudio(voiceChannel);
+        message.reply('Pak Penghulu telah bergabung ke channel.');
+    }
+
+    if (message.content.startsWith(`${PREFIX}leave`)) {
+        if (connection) {
+            connection.destroy();
+            connection = null;
+            player = null;
+            message.reply('Pak Penghulu telah keluar dari voice channel.');
+        } else {
+            message.reply('Pak Penghulu tidak berada di voice channel.');
+        }
+    }
+
     if (message.content === `${PREFIX}carijodoh`) {
         const row = createFormButton();
         await message.channel.send({
@@ -245,13 +242,13 @@ client.on('messageCreate', async (message) => {
 
 // Menambahkan custom status
 const statusMessages = ['💌 Lagi Cari Jodoh?', '📞 Hubungi Saya!'];
-const statusTypes = [ 'online'];
+const statusTypes = ['online'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
 
 async function login() {
   try {
-    await client.login(process.env.TOKEN);
+    await client.login(TOKEN);
     console.log('\x1b[36m[ LOGIN ]\x1b[0m', `\x1b[32mLogged in as: ${client.user.tag} ✅\x1b[0m`);
     console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[35mBot ID: ${client.user.id} \x1b[0m`);
     console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mConnected to ${client.guilds.cache.size} server(s) \x1b[0m`);
@@ -268,23 +265,12 @@ function updateStatus() {
     activities: [{ name: currentStatus, type: ActivityType.Custom }],
     status: currentType,
   });
-  console.log('\x1b[33m[ STATUS ]\x1b[0m', `Updated status to: ${currentStatus} (${currentType})`);
+  console.log('\x1b[33m[ STATUS ]\x1b[0m', `Updated status to: ${currentStatus} - ${currentType}`);
+
+  // Next status
   currentStatusIndex = (currentStatusIndex + 1) % statusMessages.length;
   currentTypeIndex = (currentTypeIndex + 1) % statusTypes.length;
 }
 
-function heartbeat() {
-  setInterval(() => {
-    console.log('\x1b[35m[ HEARTBEAT ]\x1b[0m', `Bot is alive at ${new Date().toLocaleTimeString()}`);
-  }, 30000);
-}
-
-client.once('ready', () => {
-  console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mPing: ${client.ws.ping} ms \x1b[0m`);
-  updateStatus();
-  setInterval(updateStatus, 10000);
-  heartbeat();
-});
-
-// Login bot
-client.login(TOKEN);
+setInterval(updateStatus, 10000); // Ubah status setiap 10 detik
+login();
