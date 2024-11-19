@@ -5,6 +5,7 @@ const fs = require('fs');
 const {
     Client,
     GatewayIntentBits,
+    Partials,
     ActivityType, 
     MessageAttachment,
     ActionRowBuilder,
@@ -38,7 +39,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages
     ],
-    partials: ['CHANNEL'], // Mengaktifkan DM
+    partials: [Partials.Channel], // Membantu bot mendeteksi DM
 });
 
 // Server untuk status bot
@@ -51,14 +52,18 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-// Event untuk menangani DM
+// Menangani DM
 client.on('messageCreate', async (message) => {
-    // Pastikan hanya merespons DM, bukan pesan di server
+    // Cek jika pesan adalah DM
     if (message.channel.type === 1) { // DM memiliki tipe channel `1`
-        const userTag = message.author.tag; // Tag user pengirim DM
-        const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu sama jodohnya ya 😉`;
-        await message.reply(response); // Kirim balasan ke DM
-        console.log(`DM diterima dari ${userTag}, bot membalas.`);
+        try {
+            const userTag = message.author.tag; // Tag user pengirim DM
+            const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#${CHANNEL_ID}> 😉`;
+            await message.reply(response); // Balas ke DM
+            console.log(`DM diterima dari ${userTag}, bot membalas.`);
+        } catch (error) {
+            console.error('Gagal merespons DM:', error);
+        }
     }
 });
 
