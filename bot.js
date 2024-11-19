@@ -15,6 +15,13 @@ const {
     InteractionType,
 } = require('discord.js');
 
+const { 
+    joinVoiceChannel, 
+    createAudioPlayer, 
+    createAudioResource, 
+    AudioPlayerStatus 
+} = require('@discordjs/voice');
+
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
@@ -25,6 +32,7 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.MessageContent,
     ],
 });
@@ -37,6 +45,78 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+// Untuk menyimpan status player
+let player;
+let connection;
+
+// Fungsi untuk memutar audio di voice channel
+async function playAudio(channel) {
+    try {
+        const audioPath = path.join(__dirname, 'audio', 'relax.mp3');
+        connection = joinVoiceChannel({
+            channelId: channel.id,
+            guildId: channel.guild.id,
+            adapterCreator: channel.guild.voiceAdapterCreator,
+        });
+
+        player = createAudioPlayer();
+        connection.subscribe(player);
+
+        const playResource = () => {
+            const resource = createAudioResource(audioPath, {
+                inlineVolume: true,
+            });
+            resource.volume.setVolume(0.001); // Atur volume ke 1%
+            player.play(resource);
+        };
+
+        playResource();
+
+        player.on(AudioPlayerStatus.Idle, () => {
+            console.log('Audio selesai, memulai ulang...');
+            playResource();
+        });
+
+        player.on('error', (error) => {
+            console.error('Kesalahan pada audio player:', error);
+        });
+
+        connection.on('error', (error) => {
+            console.error('Kesalahan pada koneksi voice channel:', error);
+        });
+
+        console.log('Audio sedang diputar di voice channel.');
+    } catch (error) {
+        console.error('Gagal memutar audio:', error);
+    }
+}
+
+ // Perintah untuk bergabung ke voice channel dan memutar audio
+    if (message.content.startsWith(`${PREFIX}join`)) {
+        const voiceChannel = message.member.voice.channel;
+
+        if (!voiceChannel) {
+            message.reply('Anda harus berada di voice channel untuk menggunakan perintah ini.');
+            return;
+        }
+
+        await playAudio(voiceChannel);
+        message.reply('Pak Penghulu telah bergabung ke channel.');
+    }
+
+    // Perintah untuk keluar dari voice channel
+    if (message.content.startsWith(`${PREFIX}leave`)) {
+        if (connection) {
+            connection.destroy();
+            connection = null;
+            player = null;
+            message.reply('Pak Penghulu telah keluar dari voice channel.');
+        } else {
+            message.reply('Pak Penghulu tidak berada di voice channel.');
+        }
+    }
 });
 
 // Fungsi membuat tombol
