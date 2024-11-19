@@ -36,7 +36,9 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages
     ],
+    partials: ['CHANNEL'], // Mengaktifkan DM
 });
 
 // Server untuk status bot
@@ -47,6 +49,17 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+// Event untuk menangani DM
+client.on('messageCreate', async (message) => {
+    // Pastikan hanya merespons DM, bukan pesan di server
+    if (message.channel.type === 1) { // DM memiliki tipe channel `1`
+        const userTag = message.author.tag; // Tag user pengirim DM
+        const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu sama jodohnya ya 😉`;
+        await message.reply(response); // Kirim balasan ke DM
+        console.log(`DM diterima dari ${userTag}, bot membalas.`);
+    }
 });
 
 // Untuk menyimpan status player
