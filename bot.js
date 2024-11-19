@@ -15,8 +15,6 @@ const {
     InteractionType,
 } = require('discord.js');
 
-
-
 const PREFIX = process.env.PREFIX;
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
@@ -166,7 +164,7 @@ client.on('messageCreate', async (message) => {
 });
 
 // Menambahkan custom status
-const statusMessages = ['💌 Cari Jodoh?', '📞 Hubungi Saya!'];
+const statusMessages = ['💌 Lagi Cari Jodoh?', '📞 Hubungi Saya!'];
 const statusTypes = [ 'online'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
