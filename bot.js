@@ -42,6 +42,9 @@ const client = new Client({
     partials: [Partials.Channel], // Membantu bot mendeteksi DM
 });
 
+// Set untuk melacak user yang sudah dibalas
+const respondedUsers = new Set();
+
 // Server untuk status bot
 app.get('/', (req, res) => {
     const filePath = path.join(__dirname, 'index.html');
@@ -54,15 +57,21 @@ app.listen(PORT, () => {
 
 // Menangani DM
 client.on('messageCreate', async (message) => {
-    // Cek jika pesan adalah DM
-    if (message.channel.type === 1) { // DM memiliki tipe channel `1`
-        try {
-            const userTag = message.author.tag; // Tag user pengirim DM
-            const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
-            await message.reply(response); // Balas ke DM
-            console.log(`DM diterima dari ${userTag}, bot membalas.`);
-        } catch (error) {
-            console.error('Gagal merespons DM:', error);
+    // Cek jika pesan adalah DM dan bukan dari bot itu sendiri
+    if (message.channel.type === 1 && !message.author.bot) { // DM memiliki tipe channel `1`
+        if (!respondedUsers.has(message.author.id)) { // Jika user belum dibalas
+            try {
+                const userTag = message.author.tag; // Tag user pengirim DM
+                const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
+                
+                await message.reply(response); // Balas ke DM
+                respondedUsers.add(message.author.id); // Tandai user sudah dibalas
+                console.log(`DM diterima dari ${userTag}, bot membalas.`);
+            } catch (error) {
+                console.error('Gagal merespons DM:', error);
+            }
+        } else {
+            console.log(`User ${message.author.tag} sudah dibalas sebelumnya, tidak mengirim ulang.`);
         }
     }
 });
