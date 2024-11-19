@@ -62,7 +62,7 @@ client.on('messageCreate', async (message) => {
         if (!respondedUsers.has(message.author.id)) { // Jika user belum dibalas
             try {
                 const userTag = message.author.tag; // Tag user pengirim DM
-                const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
+                const response = `👋 Halo kak! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
                 
                 await message.reply(response); // Balas ke DM
                 respondedUsers.add(message.author.id); // Tandai user sudah dibalas
