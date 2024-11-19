@@ -1,10 +1,12 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
+const fs = require('fs');
 const {
     Client,
     GatewayIntentBits,
     ActivityType, 
+    MessageAttachment,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
@@ -239,6 +241,44 @@ client.on('messageCreate', async (message) => {
         });
     }
 });
+
+  // Path folder gambar lokal
+    const girlsFolder = path.join(__dirname, 'couple_images', 'girls');
+    const boysFolder = path.join(__dirname, 'couple_images', 'boys');
+
+    // Perintah untuk mengirim gambar pasangan
+    if (message.content.startsWith(`${PREFIX}couple`)) {
+        try {
+            // Baca file dari folder girls dan boys
+            const girlFiles = fs.readdirSync(girlsFolder);
+            const boyFiles = fs.readdirSync(boysFolder);
+
+            // Pastikan kedua folder memiliki jumlah file yang sama
+        if (girlFiles.length !== boyFiles.length) {
+            await message.channel.send('Jumlah gambar cewek dan cowok tidak sama! Periksa folder pasangan.');
+            return;
+        }
+
+        // Pastikan urutan file di kedua folder sama (urutan yang diinginkan)
+        // Kita akan urutkan nama file agar memastikan pasangan yang sesuai
+        girlFiles.sort();
+        boyFiles.sort();
+
+        // Ambil gambar pertama sesuai urutan
+        const randomIndex = Math.floor(Math.random() * girlFiles.length);
+        const girlImagePath = path.join(girlsFolder, girlFiles[randomIndex]);
+        const boyImagePath = path.join(boysFolder, boyFiles[randomIndex]);
+
+        // Kirim kedua gambar ke channel
+        await message.reply({
+            content: `👩‍❤️‍👨 **Ini Photo Profile Couple buat kamu!**`,
+            files: [girlImagePath, boyImagePath],
+        });
+        } catch (error) {
+        console.error('Terjadi kesalahan saat mengirim gambar:', error);
+        await message.channel.send('Maaf, terjadi kesalahan saat mencoba mengirim gambar.');
+        }
+    }
 
 // Menambahkan custom status
 const statusMessages = ['💌 Lagi Cari Jodoh?', '📞 Hubungi Saya!'];
