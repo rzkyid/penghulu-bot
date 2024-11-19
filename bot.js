@@ -58,7 +58,7 @@ client.on('messageCreate', async (message) => {
     if (message.channel.type === 1) { // DM memiliki tipe channel `1`
         try {
             const userTag = message.author.tag; // Tag user pengirim DM
-            const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#${CHANNEL_ID}> 😉`;
+            const response = `👋 Halo **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
             await message.reply(response); // Balas ke DM
             console.log(`DM diterima dari ${userTag}, bot membalas.`);
         } catch (error) {
