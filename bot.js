@@ -25,7 +25,7 @@ const {
     AudioPlayerStatus 
 } = require('@discordjs/voice');
 
-const PREFIX = process.env.PREFIX;
+const PREFIX = 'p!';
 const TOKEN = process.env.TOKEN;
 const PORT = process.env.PORT || 3000;
 const RESULT_CHANNEL_ID = '1284544825596837971'; // ID channel tujuan
