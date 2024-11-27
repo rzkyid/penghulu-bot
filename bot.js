@@ -301,7 +301,7 @@ client.on('messageCreate', async (message) => {
 
             // Kirim kedua gambar ke channel
             await message.reply({
-                content: `👩‍❤️‍👨 **Ini Photo Profile Couple buat kamu!**`,
+                content: `**Nih Photo Profile Couple buat kamu! Suka ga? 👩‍❤️‍👨**`,
                 files: [girlImagePath, boyImagePath],
             });
         } catch (error) {
