@@ -313,7 +313,7 @@ client.on('messageCreate', async (message) => {
 
 
 // Menambahkan custom status
-const statusMessages = ['💌 Lagi Cari Jodoh?', '📞 Hubungi Saya!'];
+const statusMessages = ['😞 Udah Lama Jomblo?', '💌 Lagi Cari Jodoh?', '📞 Hubungi Saya!'];
 const statusTypes = ['online'];
 let currentStatusIndex = 0;
 let currentTypeIndex = 0;
