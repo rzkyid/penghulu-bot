@@ -203,7 +203,7 @@ client.on('interactionCreate', async (interaction) => {
             const tipeIdeal = interaction.fields.getTextInputValue('tipe_ideal');
 
             const embed = new EmbedBuilder()
-                .setColor('#FF00FF')
+                .setColor('#AD1457')
                 .setTitle('Halo, perkenalkan saya!')
                 .setDescription(
                     `**Nama**: ${nama}\n**Umur**: ${umur}\n` +
