@@ -105,7 +105,7 @@ client.on('messageCreate', async (message) => {
         if (!respondedUsers.has(message.author.id)) { // Jika user belum dibalas
             try {
                 const userTag = message.author.tag; // Tag user pengirim DM
-                const response = `👋 Halo kak **${userTag}**! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
+                const response = `👋 Halo kak @${userTag}! Udah lama jadi jomblo? Ingin cepat dapat jodoh? langsung aja ke channel <#1284544825596837971> ❤️\n\nSemoga cepat ketemu jodohnya ya! 😉`;
                 
                 await message.reply(response); // Balas ke DM
                 respondedUsers.add(message.author.id); // Tandai user sudah dibalas
@@ -344,7 +344,7 @@ client.on('messageCreate', async (message) => {
 
             // Kirim kedua gambar ke channel
             await message.reply({
-                content: `**Nih Photo Profile Couple buat kamu! Suka ga? 👩‍❤️‍👨**`,
+                content: `**Nih Photo Profile Couple buat kamu! Suka ga? ${message.author.toString()}? 👩‍❤️‍👨`,
                 files: [girlImagePath, boyImagePath],
             });
         } catch (error) {
