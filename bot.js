@@ -95,6 +95,11 @@ client.on('interactionCreate', async (interaction) => {
         // Mengirimkan pesan
         await interaction.reply({ content: 'Pesan berhasil dikirim!', ephemeral: true });
         await interaction.channel.send(pesan); // Pesan dikirim ke channel tempat command digunakan
+
+        const logChannel = client.channels.cache.get('1099916187044941914');
+        if (logChannel) {
+            logChannel.send(`[LOG] **${interaction.user.tag}** menggunakan /say: "${pesan}"`);
+    }
     }  
 });
 
