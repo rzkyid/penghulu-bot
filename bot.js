@@ -260,7 +260,7 @@ client.on('interactionCreate', async (interaction) => {
             const channel = client.channels.cache.get(RESULT_CHANNEL_ID);
             if (channel) {
                 const sentMessage = await channel.send({
-                    content: `${interaction.user} sedang <@&1052133998375227462>.`,
+                    content: `${interaction.user} sedang **Cari Jodoh**.`,
                     embeds: [embed],
                     components: [row],
                 });
