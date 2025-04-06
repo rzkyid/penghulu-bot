@@ -192,9 +192,12 @@ client.on('interactionCreate', async interaction => {
             return interaction.reply({ content: 'Channel surat cinta tidak ditemukan!', ephemeral: true });
         }
 
-        const text = `💌 Surat cinta untuk @${untuk}`;
+        const userToMention = interaction.guild.members.cache.find(member => member.user.username.toLowerCase() === untuk.toLowerCase());
+        const mentionText = userToMention ? `<@${userToMention.id}>` : `@${untuk}`;
+
+        const text = `💌 Surat cinta untuk ${mentionText}`;
         const embed = new EmbedBuilder()
-            .setColor('#FF69B4') // warna pink
+            .setColor('#AD1457')
             .setTitle('Isi surat:')
             .setDescription(isi)
             .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang 💘'}` })
