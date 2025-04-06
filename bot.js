@@ -229,14 +229,18 @@ if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') 
             .setStyle(ButtonStyle.Primary)
     );
 
-    await channel.send({ content: text, embeds: [embed], components: [row] });
+    const sentMessage = await channel.send({ content: text, embeds: [embed], components: [row] });
 
     // Auto react ❤️
-    await sentMessage.react('❤️');
-    
+    try {
+        await sentMessage.react('❤️');
+    } catch (error) {
+        console.error('Gagal memberikan reaksi:', error);
+    }
+
     await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
 
-    // Kirim log (menggunakan info user asli)
+    // Kirim log
     if (logChannel && logChannel.isTextBased()) {
         const logEmbed = new EmbedBuilder()
             .setTitle('📨 Log Surat Cinta')
@@ -251,7 +255,7 @@ if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') 
         if (gambar) logEmbed.setImage(gambar);
         logChannel.send({ embeds: [logEmbed] });
     }
-}
+  }
 });
 
 // Untuk menyimpan status player
