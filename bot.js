@@ -155,7 +155,7 @@ client.on('interactionCreate', async interaction => {
 
         const untukInput = new TextInputBuilder()
             .setCustomId('untuk')
-            .setLabel('Untuk: (Masukan username, bukan userid)')
+            .setLabel('Untuk: (Masukan ID User, bukan Username)')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
@@ -209,7 +209,7 @@ client.on('interactionCreate', async interaction => {
             new ButtonBuilder()
                 .setCustomId('tulis_surat_cinta')
                 .setLabel('💌 Tulis Surat Cinta')
-                .setStyle(ButtonStyle.Secondary)
+                .setStyle(ButtonStyle.Primary)
         );
 
         await channel.send({ content: text, embeds: [embed], components: [row] });
