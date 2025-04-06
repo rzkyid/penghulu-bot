@@ -188,24 +188,24 @@ if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') 
     const gambar = interaction.fields.getTextInputValue('gambar');
 
     const channel = interaction.guild.channels.cache.get(SURAT_CINTA_CHANNEL_ID);
+    const logChannel = interaction.guild.channels.cache.get('1099916187044941914');
+
     if (!channel || !channel.isTextBased()) {
         return interaction.reply({ content: 'Channel surat cinta tidak ditemukan!', ephemeral: true });
     }
 
     // Cek apakah input adalah user ID yang valid
     let mentionText = untuk;
-    const idPattern = /^\d{17,20}$/; // Discord ID pattern
+    const idPattern = /^\d{17,20}$/;
 
     if (idPattern.test(untuk)) {
         try {
             const member = await interaction.guild.members.fetch(untuk);
             if (member) mentionText = `<@${member.id}>`;
         } catch (err) {
-            // ID tidak valid atau user tidak ditemukan, fallback ke teks biasa
             mentionText = untuk;
         }
     } else {
-        // Coba cari user dari username
         const member = interaction.guild.members.cache.find(m => m.user.username.toLowerCase() === untuk.toLowerCase());
         if (member) {
             mentionText = `<@${member.id}>`;
@@ -231,7 +231,23 @@ if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') 
 
     await channel.send({ content: text, embeds: [embed], components: [row] });
     await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
+
+    // Kirim log (menggunakan info user asli)
+    if (logChannel && logChannel.isTextBased()) {
+        const logEmbed = new EmbedBuilder()
+            .setTitle('📨 Log Surat Cinta')
+            .setColor('#AD1457')
+            .addFields(
+                { name: 'Pengirim', value: `${interaction.user.tag} (${interaction.user.id})`, inline: false },
+                { name: 'Untuk', value: mentionText, inline: false },
+                { name: 'Isi Surat', value: isi.length > 1000 ? isi.substring(0, 1000) + '...' : isi }
+            )
+            .setTimestamp();
+
+        if (gambar) logEmbed.setImage(gambar);
+        logChannel.send({ embeds: [logEmbed] });
     }
+}
 });
 
 // Untuk menyimpan status player
