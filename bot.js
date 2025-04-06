@@ -193,7 +193,7 @@ client.on('interactionCreate', async interaction => {
         }
 
         const userToMention = interaction.guild.members.cache.find(member => member.user.username.toLowerCase() === untuk.toLowerCase());
-        const mentionText = userToMention ? `<@${userToMention.id}>` : `@${untuk}`;
+        const mentionText = userToMention ? `<@${userToMention.id}>` : untuk;
 
         const text = `💌 Surat cinta untuk ${mentionText}`;
         const embed = new EmbedBuilder()
