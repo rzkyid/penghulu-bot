@@ -230,6 +230,10 @@ if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') 
     );
 
     await channel.send({ content: text, embeds: [embed], components: [row] });
+
+    // Auto react ❤️
+    await sentMessage.react('❤️');
+    
     await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
 
     // Kirim log (menggunakan info user asli)
