@@ -155,7 +155,7 @@ client.on('interactionCreate', async interaction => {
 
         const untukInput = new TextInputBuilder()
             .setCustomId('untuk')
-            .setLabel('Untuk: (Masukan User ID)')
+            .setLabel('Untuk: (Masukan User ID jika ingin mention)')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
