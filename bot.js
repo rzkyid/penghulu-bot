@@ -148,26 +148,26 @@ client.on('interactionCreate', async interaction => {
             .setTitle('💌 Tulis Surat Cinta');
 
         const dariInput = new TextInputBuilder()
-            .setCustomId('Dari')
-            .setLabel('(Kosongkan jika ingin anonim)')
+            .setCustomId('dari')
+            .setLabel('Dari: (Kosongkan jika ingin anonim)')
             .setStyle(TextInputStyle.Short)
             .setRequired(false);
 
         const untukInput = new TextInputBuilder()
-            .setCustomId('Untuk')
-            .setLabel('(Masukan username, bukan userid)')
+            .setCustomId('untuk')
+            .setLabel('Untuk: (Masukan username, bukan userid)')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
         const isiInput = new TextInputBuilder()
-            .setCustomId('Isi')
-            .setLabel('Isi Surat')
+            .setCustomId('isi')
+            .setLabel('Isi Surat:')
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true);
 
         const gambarInput = new TextInputBuilder()
-            .setCustomId('Gambar')
-            .setLabel('Link Gambar (opsional)')
+            .setCustomId('gambar')
+            .setLabel('Link Gambar: (opsional)')
             .setStyle(TextInputStyle.Short)
             .setRequired(false);
 
@@ -182,10 +182,10 @@ client.on('interactionCreate', async interaction => {
 
     // Saat form dikirim
     if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') {
-        const dari = interaction.fields.getTextInputValue('Dari');
-        const untuk = interaction.fields.getTextInputValue('Untuk');
-        const isi = interaction.fields.getTextInputValue('Isi');
-        const gambar = interaction.fields.getTextInputValue('Gambar');
+        const dari = interaction.fields.getTextInputValue('dari');
+        const untuk = interaction.fields.getTextInputValue('untuk');
+        const isi = interaction.fields.getTextInputValue('isi');
+        const gambar = interaction.fields.getTextInputValue('gambar');
 
         const channel = interaction.guild.channels.cache.get(SURAT_CINTA_CHANNEL_ID);
         if (!channel || !channel.isTextBased()) {
@@ -193,10 +193,10 @@ client.on('interactionCreate', async interaction => {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle(`💌 Surat cinta untuk @${Untuk}`)
+            .setTitle(`💌 Surat cinta untuk @${untuk}`)
             .setDescription(isi)
             .setColor('#FF69B4') // warna pink
-            .setFooter({ text: `Surat cinta dari ${Dari ? '@' + Dari : 'Seseorang 💘'}` })
+            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang 💌'}` })
             .setTimestamp();
 
         if (gambar) embed.setImage(gambar);
