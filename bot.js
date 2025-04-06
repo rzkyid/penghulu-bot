@@ -193,10 +193,10 @@ client.on('interactionCreate', async interaction => {
         }
 
         const embed = new EmbedBuilder()
-            .setTitle(`💘 Surat cinta untuk @${Untuk}`)
+            .setTitle(`💌 Surat cinta untuk @${Untuk}`)
             .setDescription(isi)
             .setColor('#FF69B4') // warna pink
-            .setFooter({ text: `Surat cinta dari ${Dari ? '@' + Dari : 'Seseorang 💌'}` })
+            .setFooter({ text: `Surat cinta dari ${Dari ? '@' + Dari : 'Seseorang 💘'}` })
             .setTimestamp();
 
         if (gambar) embed.setImage(gambar);
