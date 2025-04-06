@@ -180,40 +180,57 @@ client.on('interactionCreate', async interaction => {
         await interaction.showModal(modal);
     }
 
-    // Saat form dikirim
-    if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') {
-        const dari = interaction.fields.getTextInputValue('dari');
-        const untuk = interaction.fields.getTextInputValue('untuk');
-        const isi = interaction.fields.getTextInputValue('isi');
-        const gambar = interaction.fields.getTextInputValue('gambar');
+// Saat form dikirim
+if (interaction.isModalSubmit() && interaction.customId === 'form_surat_cinta') {
+    const dari = interaction.fields.getTextInputValue('dari');
+    const untuk = interaction.fields.getTextInputValue('untuk');
+    const isi = interaction.fields.getTextInputValue('isi');
+    const gambar = interaction.fields.getTextInputValue('gambar');
 
-        const channel = interaction.guild.channels.cache.get(SURAT_CINTA_CHANNEL_ID);
-        if (!channel || !channel.isTextBased()) {
-            return interaction.reply({ content: 'Channel surat cinta tidak ditemukan!', ephemeral: true });
+    const channel = interaction.guild.channels.cache.get(SURAT_CINTA_CHANNEL_ID);
+    if (!channel || !channel.isTextBased()) {
+        return interaction.reply({ content: 'Channel surat cinta tidak ditemukan!', ephemeral: true });
+    }
+
+    // Cek apakah input adalah user ID yang valid
+    let mentionText = untuk;
+    const idPattern = /^\d{17,20}$/; // Discord ID pattern
+
+    if (idPattern.test(untuk)) {
+        try {
+            const member = await interaction.guild.members.fetch(untuk);
+            if (member) mentionText = `<@${member.id}>`;
+        } catch (err) {
+            // ID tidak valid atau user tidak ditemukan, fallback ke teks biasa
+            mentionText = untuk;
         }
+    } else {
+        // Coba cari user dari username
+        const member = interaction.guild.members.cache.find(m => m.user.username.toLowerCase() === untuk.toLowerCase());
+        if (member) {
+            mentionText = `<@${member.id}>`;
+        }
+    }
 
-        const userToMention = interaction.guild.members.cache.find(member => member.user.username.toLowerCase() === untuk.toLowerCase());
-        const mentionText = userToMention ? `<@${userToMention.id}>`;
+    const text = `💌 Surat cinta untuk ${mentionText}`;
+    const embed = new EmbedBuilder()
+        .setColor('#AD1457')
+        .setTitle('Isi surat:')
+        .setDescription(isi)
+        .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang'} 💘` })
+        .setTimestamp();
 
-        const text = `💌 Surat cinta untuk ${mentionText}`;
-        const embed = new EmbedBuilder()
-            .setColor('#AD1457')
-            .setTitle('Isi surat:')
-            .setDescription(isi)
-            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang'} 💘` })
-            .setTimestamp();
+    if (gambar) embed.setImage(gambar);
 
-        if (gambar) embed.setImage(gambar);
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('tulis_surat_cinta')
+            .setLabel('💌 Tulis Surat Cinta')
+            .setStyle(ButtonStyle.Primary)
+    );
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('tulis_surat_cinta')
-                .setLabel('💌 Tulis Surat Cinta')
-                .setStyle(ButtonStyle.Primary)
-        );
-
-        await channel.send({ content: text, embeds: [embed], components: [row] });
-        await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
+    await channel.send({ content: text, embeds: [embed], components: [row] });
+    await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
     }
 });
 
