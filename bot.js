@@ -193,14 +193,14 @@ client.on('interactionCreate', async interaction => {
         }
 
         const userToMention = interaction.guild.members.cache.find(member => member.user.username.toLowerCase() === untuk.toLowerCase());
-        const mentionText = userToMention ? `<@${userToMention.id}>` : untuk;
+        const mentionText = userToMention ? `<@${userToMention.id}>`;
 
         const text = `💌 Surat cinta untuk ${mentionText}`;
         const embed = new EmbedBuilder()
             .setColor('#AD1457')
             .setTitle('Isi surat:')
             .setDescription(isi)
-            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang 💘'}` })
+            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang'} 💘` })
             .setTimestamp();
 
         if (gambar) embed.setImage(gambar);
