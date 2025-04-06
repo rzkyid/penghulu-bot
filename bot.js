@@ -192,11 +192,12 @@ client.on('interactionCreate', async interaction => {
             return interaction.reply({ content: 'Channel surat cinta tidak ditemukan!', ephemeral: true });
         }
 
+        const text = `💌 Surat cinta untuk @${untuk}`;
         const embed = new EmbedBuilder()
-            .setTitle(`💌 Surat cinta untuk @${untuk}`)
-            .setDescription(isi)
             .setColor('#FF69B4') // warna pink
-            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang 💌'}` })
+            .setTitle('Isi surat:')
+            .setDescription(isi)
+            .setFooter({ text: `Surat cinta dari ${dari ? dari : 'Seseorang 💘'}` })
             .setTimestamp();
 
         if (gambar) embed.setImage(gambar);
@@ -208,7 +209,7 @@ client.on('interactionCreate', async interaction => {
                 .setStyle(ButtonStyle.Secondary)
         );
 
-        await channel.send({ embeds: [embed], components: [row] });
+        await channel.send({ content: text, embeds: [embed], components: [row] });
         await interaction.reply({ content: '✅ Surat cintamu sudah terkirim!', ephemeral: true });
     }
 });
