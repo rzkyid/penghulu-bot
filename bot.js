@@ -24,7 +24,8 @@ const {
     joinVoiceChannel, 
     createAudioPlayer, 
     createAudioResource, 
-    AudioPlayerStatus 
+    AudioPlayerStatus,
+    VoiceConnectionStatus
 } = require('@discordjs/voice');
 
 const PREFIX = 'ph';
