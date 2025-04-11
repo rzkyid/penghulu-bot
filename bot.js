@@ -362,9 +362,29 @@ const createModal = () => {
     return modal;
 };
 
-// Ketika bot siap
+// Bot ketika berhasil login
 client.once('ready', () => {
-    console.log('Bot is ready!');
+  console.log('\x1b[36m[ INFO ]\x1b[0m', `\x1b[34mPing: ${client.ws.ping} ms \x1b[0m`);
+  try {
+    const vcid = "1307965818654560368";
+    if (!client.channels.cache.get(vcid)) {
+        console.error(`Channel dengan ID "${vcid}"" tidak ditemukan.`);
+    } else {
+        client.channels.fetch(vcid).then((channel) => {
+            const connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guild.id,
+                adapterCreator: channel.guild.voiceAdapterCreator,
+            });
+
+            console.log(
+                '\x1b[36m[ INFO ]\x1b[0m', `Bot ${client.user.tag} sudah join ke channel ${channel.name}!`,
+            );
+        });
+    }
+} catch (error) {
+    console.error("Terjadi masalah saat mencoba gabung channel");
+}
 });
 
 // Ketika tombol diklik
@@ -448,6 +468,30 @@ client.on('messageCreate', async (message) => {
             content: 'Klik tombol berikut untuk memulai form Cari Jodoh:',
             components: [row],
         });
+    }
+    // Perintah untuk kembali ke Kantor Pejabat
+    if (message.content.startsWith(`${PREFIX}kerja`)) {
+        try {
+                const vcid = "1307965818654560368"
+                const voiceChannel = message.guild.channels.cache.get(vcid);
+                if (!voiceChannel || voiceChannel.type !== 2) {
+                    return message.reply("Channel voice tidak ditemukan");
+                }
+                const connection = joinVoiceChannel({
+                    channelId: vcid,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                });
+        
+                message.reply("Siap laksanakan! Saya akan segera ke Kantor Pejabat");
+        
+                connection.on(VoiceConnectionStatus.Ready, () => {
+                    console.log("Kembali ke voice Kantor Pejabat");
+                });
+        
+            } catch (error) {
+                console.error("Terjadi masalah saat mencoba kembali ke voice Kantor Pejabat:", error);
+        }
     }
 });
 
